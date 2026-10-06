@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { getArtistInfo, getArtistTopAlbums, getArtistTopTracks, getSimilarArtists } from "../api/lastfm";
 import type { Album, Artist, ArtistInfo, Track } from "../types";
 import { AlbumCard, ArtistCard, TrackRow } from "./Cards";
+import SmartImage from "./SmartImage";
 
 interface Props {
   name: string;
@@ -46,9 +47,12 @@ export default function ArtistDetail({ name, onArtistClick, onAddTrack }: Props)
     <section>
       <button className="link" onClick={() => onArtistClick("")}>← Back</button>
       <div className="artist-head">
-        {info.image?.find((i) => i.size === "large")?.["#text"] && (
-          <img className="artist-img" src={info.image.find((i) => i.size === "large")?.["#text"]} alt={info.name} />
-        )}
+        <SmartImage
+          className="artist-img"
+          src={info.image?.find((i) => i.size === "large")?.["#text"]}
+          artist={info.name}
+          alt={info.name}
+        />
         <div>
           <h2>{info.name}</h2>
           {info.tags?.tag && (

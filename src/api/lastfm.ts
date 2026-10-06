@@ -14,14 +14,6 @@ async function lfm(params: Record<string, string>) {
   return data;
 }
 
-const img = (images?: { size: string; "#text": string }[], size = "large") => {
-  if (!images) return "";
-  const found = images.find((i) => i.size === size) ?? images[images.length - 1];
-  return found?.["#text"] ?? "";
-};
-
-export const artistImage = (a: { image?: { size: string; "#text": string }[] }) =>
-  img(a.image, "large");
 
 // ---- search ----
 export async function searchArtists(q: string, limit = 20) {

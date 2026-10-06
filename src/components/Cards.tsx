@@ -1,15 +1,18 @@
-import { artistImage } from "../api/lastfm";
 import type { Album, Artist, Track } from "../types";
+import SmartImage from "./SmartImage";
 
 const artistName = (a: string | { name?: string } | undefined) =>
   typeof a === "string" ? a : (a?.name ?? "Unknown");
 
 export function ArtistCard({ artist, rank, onClick }: { artist: Artist; rank?: number; onClick?: (name: string) => void }) {
-  const image = artistImage(artist);
   return (
     <div className="card" onClick={() => onClick?.(artist.name)}>
       {rank && <span className="rank">{rank}</span>}
-      {image ? <img src={image} alt={artist.name} /> : <div className="no-img">🎤</div>}
+      <SmartImage
+        src={artist.image?.find((i) => i.size === "large")?.["#text"] || artist.image?.[artist.image.length - 1]?.["#text"]}
+        artist={artist.name}
+        alt={artist.name}
+      />
       <div className="card-body">
         <strong>{artist.name}</strong>
         {artist.listeners && <span>{Number(artist.listeners).toLocaleString()} listeners</span>}
