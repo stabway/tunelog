@@ -26,6 +26,7 @@ function AppInner() {
   const openArtist = (name: string) => {
     if (!name) return;
     setArtistStack((s) => (s[s.length - 1] === name ? s : [...s, name]));
+    window.scrollTo({ top: 0 });
   };
 
   const closeArtist = () => setArtistStack((s) => s.slice(0, -1));
@@ -73,43 +74,6 @@ function AppInner() {
           {error && <p className="error">{error}</p>}
           {loading && <p className="muted">Шукаю... {tab}…</p>}
 
-          {searched && !loading && !error && (
-            <section>
-              <h2>Результати по “{query}”</h2>
-              {tab === "artist" && (
-                <div className="grid">
-                  {results.artists.map((a) => (
-                    <ArtistCard key={a.name} artist={a} onClick={openArtist} />
-                  ))}
-                </div>
-              )}
-              {tab === "album" && (
-                <div className="grid">
-                  {results.albums.map((a) => (
-                    <AlbumCard key={a.name + (typeof a.artist === "string" ? a.artist : a.artist?.name)} album={a} />
-                  ))}
-                </div>
-              )}
-              {tab === "track" && (
-                <div className="track-list">
-                  {results.tracks.map((t) => (
-                    <TrackRow
-                      key={t.name + (typeof t.artist === "string" ? t.artist : t.artist?.name)}
-                      track={t}
-                      onArtistClick={openArtist}
-                      onAdd={setPendingTrack}
-                    />
-                  ))}
-                </div>
-              )}
-              {((tab === "artist" && !results.artists.length) ||
-                (tab === "album" && !results.albums.length) ||
-                (tab === "track" && !results.tracks.length)) && (
-                <p className="muted">Нічого не знайдено</p>
-              )}
-            </section>
-          )}
-
           {selectedArtist ? (
             <ArtistDetail
               name={selectedArtist}
@@ -118,7 +82,46 @@ function AppInner() {
               onAddTrack={setPendingTrack}
             />
           ) : (
-            !searched && <TopCharts onArtistClick={openArtist} onAddTrack={setPendingTrack} />
+            <>
+              {searched && !loading && !error && (
+                <section>
+                  <h2>Результати по “{query}”</h2>
+                  {tab === "artist" && (
+                    <div className="grid">
+                      {results.artists.map((a) => (
+                        <ArtistCard key={a.name} artist={a} onClick={openArtist} />
+                      ))}
+                    </div>
+                  )}
+                  {tab === "album" && (
+                    <div className="grid">
+                      {results.albums.map((a) => (
+                        <AlbumCard key={a.name + (typeof a.artist === "string" ? a.artist : a.artist?.name)} album={a} />
+                      ))}
+                    </div>
+                  )}
+                  {tab === "track" && (
+                    <div className="track-list">
+                      {results.tracks.map((t) => (
+                        <TrackRow
+                          key={t.name + (typeof t.artist === "string" ? t.artist : t.artist?.name)}
+                          track={t}
+                          onArtistClick={openArtist}
+                          onAdd={setPendingTrack}
+                        />
+                      ))}
+                    </div>
+                  )}
+                  {((tab === "artist" && !results.artists.length) ||
+                    (tab === "album" && !results.albums.length) ||
+                    (tab === "track" && !results.tracks.length)) && (
+                    <p className="muted">Нічого не знайдено</p>
+                  )}
+                </section>
+              )}
+
+              {!searched && <TopCharts onArtistClick={openArtist} onAddTrack={setPendingTrack} />}
+            </>
           )}
         </>
       )}
