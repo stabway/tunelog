@@ -72,3 +72,51 @@ export async function getArtistTopTracks(name: string, limit = 12) {
   const d = await lfm({ method: "artist.gettoptracks", artist: name, limit: String(limit) });
   return (d.toptracks?.track ?? []) as import("../types").Track[];
 }
+
+// ---- album detail ----
+export async function getAlbumInfo(artist: string, album: string) {
+  const d = await lfm({ method: "album.getinfo", artist, album });
+  return d.album as import("../types").AlbumInfo;
+}
+
+export async function getAlbumTopTags(artist: string, album: string, limit = 3) {
+  const d = await lfm({ method: "album.gettoptags", artist, album });
+  const tags = (d.toptags?.tag ?? []) as { name: string; count?: string }[];
+  return tags
+    .slice()
+    .sort((a, b) => Number(b.count ?? 0) - Number(a.count ?? 0))
+    .slice(0, limit)
+    .map((t) => t.name);
+}
+
+export async function getTopAlbumsByTag(tag: string, limit = 20) {
+  const d = await lfm({ method: "tag.gettopalbums", tag, limit: String(limit) });
+  return (d.albums?.album ?? []) as import("../types").Album[];
+}
+
+// NOTE: Last.fm has no album.getsimilar endpoint, so "similar albums" are
+// approximated: take the album's top tags, pull each tag's top albums,
+// then merge and rank by tag weight + chart position.
+export async function getSimilarAlbums(artist: string, album: string, limit = 12) {
+  const tags = await getAlbumTopTags(artist, album, 3);
+  const lists = await Promise.all(
+    tags.map((t) => getTopAlbumsByTag(t, 20).catch(() => [] as import("../types").Album[]))
+  );
+  const scored = new Map<string, { album: import("../types").Album; score: number }>();
+  lists.forEach((list, i) => {
+    list.forEach((a, idx) => {
+      const aArtist = typeof a.artist === "string" ? a.artist : a.artist?.name;
+      if (!aArtist) return;
+      if (aArtist.toLowerCase() === artist.toLowerCase() && a.name.toLowerCase() === album.toLowerCase()) return;
+      const key = `${aArtist}|||${a.name}`.toLowerCase();
+      const score = (3 - i) * 100 + (20 - idx); // earlier tag weighs more, higher chart rank is better
+      const entry = scored.get(key);
+      if (entry) entry.score += score;
+      else scored.set(key, { album: a, score });
+    });
+  });
+  return [...scored.values()]
+    .sort((x, y) => y.score - x.score)
+    .slice(0, limit)
+    .map((e) => e.album);
+}
