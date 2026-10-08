@@ -2,11 +2,16 @@ import { useState } from "react";
 import SearchBar from "./components/SearchBar";
 import TopCharts from "./components/TopCharts";
 import ArtistDetail from "./components/ArtistDetail";
+import AlbumDetail from "./components/AlbumDetail";
 import PlaylistPanel from "./components/PlaylistPanel";
 import { AlbumCard, ArtistCard, TrackRow } from "./components/Cards";
 import { searchAlbums, searchArtists, searchTracks } from "./api/lastfm";
 import { PlaylistProvider } from "./context/PlaylistContext";
 import type { Album, Artist, PlaylistTrack, SearchTab, Track } from "./types";
+
+type NavEntry =
+  | { kind: "artist"; name: string }
+  | { kind: "album"; artist: string; album: string };
 
 function AppInner() {
   const [view, setView] = useState<"home" | "playlists">("home");
@@ -18,23 +23,37 @@ function AppInner() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [artistStack, setArtistStack] = useState<string[]>([]);
+  const [navStack, setNavStack] = useState<NavEntry[]>([]);
   const [pendingTrack, setPendingTrack] = useState<PlaylistTrack | null>(null);
 
-  const selectedArtist = artistStack[artistStack.length - 1] ?? "";
+  const top = navStack.length ? navStack[navStack.length - 1] : null;
 
   const openArtist = (name: string) => {
     if (!name) return;
-    setArtistStack((s) => (s[s.length - 1] === name ? s : [...s, name]));
+    setNavStack((s) => {
+      const t = s[s.length - 1];
+      return t?.kind === "artist" && t.name === name ? s : [...s, { kind: "artist", name }];
+    });
     window.scrollTo({ top: 0 });
   };
 
-  const closeArtist = () => setArtistStack((s) => s.slice(0, -1));
+  const openAlbum = (artist: string, album: string) => {
+    if (!artist || !album) return;
+    setNavStack((s) => {
+      const t = s[s.length - 1];
+      return t?.kind === "album" && t.artist === artist && t.album === album
+        ? s
+        : [...s, { kind: "album", artist, album }];
+    });
+    window.scrollTo({ top: 0 });
+  };
+
+  const goBack = () => setNavStack((s) => s.slice(0, -1));
 
   const handleSearch = async (q: string) => {
     setLoading(true);
     setError("");
-    setArtistStack([]);
+    setNavStack([]);
     setQuery(q);
     setSearched(true);
     try {
@@ -74,11 +93,21 @@ function AppInner() {
           {error && <p className="error">{error}</p>}
           {loading && <p className="muted">Шукаю... {tab}…</p>}
 
-          {selectedArtist ? (
-            <ArtistDetail
-              name={selectedArtist}
-              onBack={closeArtist}
+          {top?.kind === "album" ? (
+            <AlbumDetail
+              artist={top.artist}
+              album={top.album}
+              onBack={goBack}
               onArtistClick={openArtist}
+              onAlbumClick={openAlbum}
+              onAddTrack={setPendingTrack}
+            />
+          ) : top?.kind === "artist" ? (
+            <ArtistDetail
+              name={top.name}
+              onBack={goBack}
+              onArtistClick={openArtist}
+              onAlbumClick={openAlbum}
               onAddTrack={setPendingTrack}
             />
           ) : (
@@ -96,7 +125,7 @@ function AppInner() {
                   {tab === "album" && (
                     <div className="grid">
                       {results.albums.map((a) => (
-                        <AlbumCard key={a.name + (typeof a.artist === "string" ? a.artist : a.artist?.name)} album={a} />
+                        <AlbumCard key={a.name + (typeof a.artist === "string" ? a.artist : a.artist?.name)} album={a} onClick={openAlbum} />
                       ))}
                     </div>
                   )}

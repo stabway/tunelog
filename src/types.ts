@@ -23,6 +23,19 @@ export interface Album {
   playcount?: string;
 }
 
+export interface AlbumInfo {
+  name: string;
+  artist?: string | { name: string };
+  mbid?: string;
+  url?: string;
+  image?: LfmImage[];
+  listeners?: string;
+  playcount?: string;
+  tracks?: { track?: Track[] | Track };
+  wiki?: { summary?: string; content?: string };
+  tags?: { tag?: { name: string }[] };
+}
+
 export interface Track {
   name: string;
   artist?: string | { name: string };

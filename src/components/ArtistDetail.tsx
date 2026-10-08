@@ -8,10 +8,11 @@ interface Props {
   name: string;
   onBack: () => void;
   onArtistClick: (name: string) => void;
+  onAlbumClick: (artist: string, album: string) => void;
   onAddTrack: (track: { name: string; artist: string }) => void;
 }
 
-export default function ArtistDetail({ name, onBack, onArtistClick, onAddTrack }: Props) {
+export default function ArtistDetail({ name, onBack, onArtistClick, onAlbumClick, onAddTrack }: Props) {
   const [info, setInfo] = useState<ArtistInfo | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -80,7 +81,7 @@ export default function ArtistDetail({ name, onBack, onArtistClick, onAddTrack }
 
       <h3>Top albums</h3>
       <div className="grid">
-        {albums.map((a) => <AlbumCard key={a.name} album={a} />)}
+        {albums.map((a) => <AlbumCard key={a.name} album={a} onClick={onAlbumClick} />)}
       </div>
 
       <h3>Similar artists</h3>
