@@ -18,13 +18,22 @@ function AppInner() {
   const [searched, setSearched] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
-  const [selectedArtist, setSelectedArtist] = useState("");
+  const [artistStack, setArtistStack] = useState<string[]>([]);
   const [pendingTrack, setPendingTrack] = useState<PlaylistTrack | null>(null);
+
+  const selectedArtist = artistStack[artistStack.length - 1] ?? "";
+
+  const openArtist = (name: string) => {
+    if (!name) return;
+    setArtistStack((s) => (s[s.length - 1] === name ? s : [...s, name]));
+  };
+
+  const closeArtist = () => setArtistStack((s) => s.slice(0, -1));
 
   const handleSearch = async (q: string) => {
     setLoading(true);
     setError("");
-    setSelectedArtist("");
+    setArtistStack([]);
     setQuery(q);
     setSearched(true);
     try {
@@ -70,7 +79,7 @@ function AppInner() {
               {tab === "artist" && (
                 <div className="grid">
                   {results.artists.map((a) => (
-                    <ArtistCard key={a.name} artist={a} onClick={(n) => setSelectedArtist(n)} />
+                    <ArtistCard key={a.name} artist={a} onClick={openArtist} />
                   ))}
                 </div>
               )}
@@ -87,7 +96,7 @@ function AppInner() {
                     <TrackRow
                       key={t.name + (typeof t.artist === "string" ? t.artist : t.artist?.name)}
                       track={t}
-                      onArtistClick={(n) => setSelectedArtist(n)}
+                      onArtistClick={openArtist}
                       onAdd={setPendingTrack}
                     />
                   ))}
@@ -104,11 +113,12 @@ function AppInner() {
           {selectedArtist ? (
             <ArtistDetail
               name={selectedArtist}
-              onArtistClick={(n) => n && setSelectedArtist(n)}
+              onBack={closeArtist}
+              onArtistClick={openArtist}
               onAddTrack={setPendingTrack}
             />
           ) : (
-            !searched && <TopCharts onArtistClick={setSelectedArtist} onAddTrack={setPendingTrack} />
+            !searched && <TopCharts onArtistClick={openArtist} onAddTrack={setPendingTrack} />
           )}
         </>
       )}

@@ -5,6 +5,12 @@ import { ArtistCard, TrackRow } from "./Cards";
 
 const COUNTRIES = ["Ukraine", "United States", "United Kingdom", "Germany", "Poland", "France", "Japan", "Brazil"];
 
+function sortByListenersDesc(artists: Artist[]) {
+  return artists
+    .slice()
+    .sort((a, b) => Number(b.listeners ?? 0) - Number(a.listeners ?? 0));
+}
+
 interface Props {
   onArtistClick: (name: string) => void;
   onAddTrack: (track: { name: string; artist: string }) => void;
@@ -29,7 +35,7 @@ export default function TopCharts({ onArtistClick, onAddTrack }: Props) {
     load
       .then((data) => {
         if (cancelled) return;
-        if (tab === "artists") setArtists(data as Artist[]);
+        if (tab === "artists") setArtists(sortByListenersDesc(data as Artist[]));
         else setTracks(data as Track[]);
       })
       .catch((e) => !cancelled && setError(e.message))

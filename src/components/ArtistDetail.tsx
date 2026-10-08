@@ -6,11 +6,12 @@ import SmartImage from "./SmartImage";
 
 interface Props {
   name: string;
+  onBack: () => void;
   onArtistClick: (name: string) => void;
   onAddTrack: (track: { name: string; artist: string }) => void;
 }
 
-export default function ArtistDetail({ name, onArtistClick, onAddTrack }: Props) {
+export default function ArtistDetail({ name, onBack, onArtistClick, onAddTrack }: Props) {
   const [info, setInfo] = useState<ArtistInfo | null>(null);
   const [albums, setAlbums] = useState<Album[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
@@ -45,7 +46,7 @@ export default function ArtistDetail({ name, onArtistClick, onAddTrack }: Props)
 
   return (
     <section>
-      <button className="link" onClick={() => onArtistClick("")}>← Back</button>
+      <button className="link" onClick={onBack}>← Back</button>
       <div className="artist-head">
         <SmartImage
           className="artist-img"
