@@ -1,64 +1,97 @@
 import { useEffect, useState } from "react";
 
-// ---- TheAudioDB fallback (free test key "2", no signup needed) ----
-const tadbCache = new Map<string, string | null>();
+const LFM_PLACEHOLDER_IDS = ["2a96cbd8b46e442fc41c2b86b821562f"];
 
-async function fetchArtistThumb(artist: string): Promise<string | null> {
-  const key = artist.toLowerCase();
-  if (tadbCache.has(key)) return tadbCache.get(key)!;
-  try {
-    const res = await fetch(
-      `https://www.theaudiodb.com/api/v1/json/2/search.php?s=${encodeURIComponent(artist)}`
-    );
-    const data = await res.json();
-    const thumb: string | null = data?.artists?.[0]?.strArtistThumb ?? null;
-    tadbCache.set(key, thumb);
-    return thumb;
-  } catch {
-    tadbCache.set(key, null);
-    return null;
+function isLfmPlaceholder(src?: string): boolean {
+  if (!src) return true;
+  return LFM_PLACEHOLDER_IDS.some((id) => src.includes(id));
+}
+
+
+// TheAudioDB free test key is now "123" (the old "2" returns 404).
+async function fetchTadbThumb(artist: string): Promise<string | null> {
+  const res = await fetch(
+    `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${encodeURIComponent(artist)}`
+  );
+  const data = await res.json();
+  return data?.artists?.[0]?.strArtistThumb ?? null;
+}
+
+async function fetchDeezerPicture(artist: string): Promise<string | null> {
+  const res = await fetch(
+    `https://api.deezer.com/search/artist?q=${encodeURIComponent(artist)}&limit=1`
+  );
+  const data = await res.json();
+  return data?.data?.[0]?.picture_big ?? data?.data?.[0]?.picture ?? null;
+}
+
+async function fetchWikiImage(artist: string): Promise<string | null> {
+  const res = await fetch(
+    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(artist)}`
+  );
+  if (!res.ok) return null;
+  const data = await res.json();
+  return data?.originalimage?.source ?? data?.thumbnail?.source ?? null;
+}
+
+type Stage = "lfm" | "tadb" | "deezer" | "wiki" | "none";
+
+const FALLBACKS: Partial<Record<Stage, (a: string) => Promise<string | null>>> = {
+  tadb: fetchTadbThumb,
+  deezer: fetchDeezerPicture,
+  wiki: fetchWikiImage,
+};
+
+function nextStage(s: Stage): Stage {
+  if (s === "lfm") return "tadb";
+  if (s === "tadb") return "deezer";
+  if (s === "deezer") return "wiki";
+  return "none";
+}
+
+const fallbackCache = new Map<string, Promise<string | null>>();
+
+function fetchFallback(stage: Stage, artist: string): Promise<string | null> {
+  const key = `${stage}:${artist.toLowerCase()}`;
+  if (!fallbackCache.has(key)) {
+    fallbackCache.set(key, FALLBACKS[stage]!(artist).catch(() => null));
   }
+  return fallbackCache.get(key)!;
 }
 
 interface Props {
-  /** URL from Last.fm (may be empty or dead) */
   src?: string;
-  /** Artist name — used to fetch a fallback photo from TheAudioDB */
   artist?: string;
   alt: string;
   className?: string;
   emoji?: string;
 }
 
-/**
- * Image with a graceful fallback chain:
- *   last.fm image → TheAudioDB artist photo → placeholder tile
- */
 export default function SmartImage({ src, artist, alt, className, emoji = "🎤" }: Props) {
-  const [stage, setStage] = useState<"lfm" | "tadb" | "none">(
-    src ? "lfm" : artist ? "tadb" : "none"
+  const [stage, setStage] = useState<Stage>(
+    !isLfmPlaceholder(src) ? "lfm" : artist ? "tadb" : "none"
   );
-  const [tadbUrl, setTadbUrl] = useState("");
+  const [url, setUrl] = useState("");
 
   useEffect(() => {
-    setTadbUrl("");
-    setStage(src ? "lfm" : artist ? "tadb" : "none");
+    setUrl("");
+    setStage(!isLfmPlaceholder(src) ? "lfm" : artist ? "tadb" : "none");
   }, [src, artist]);
 
   useEffect(() => {
-    if (stage !== "tadb" || !artist) return;
+    if (stage === "lfm" || stage === "none" || !artist) return;
     let cancelled = false;
-    fetchArtistThumb(artist).then((u) => {
+    fetchFallback(stage, artist).then((u) => {
       if (cancelled) return;
-      if (u) setTadbUrl(u);
-      else setStage("none");
+      if (u) setUrl(u);
+      else setStage((s) => nextStage(s));
     });
     return () => {
       cancelled = true;
     };
   }, [stage, artist]);
 
-  const current = stage === "lfm" ? src : stage === "tadb" ? tadbUrl : "";
+  const current = stage === "lfm" ? src : url;
 
   if (!current) {
     return <div className={className ? `${className} no-img` : "no-img"}>{emoji}</div>;
@@ -71,8 +104,7 @@ export default function SmartImage({ src, artist, alt, className, emoji = "🎤"
       alt={alt}
       loading="lazy"
       onError={() =>
-        // dead last.fm link → try TheAudioDB; dead fallback → placeholder
-        setStage((s) => (s === "lfm" && artist ? "tadb" : "none"))
+        setStage((s) => nextStage(s))
       }
     />
   );

@@ -22,11 +22,13 @@ export function ArtistCard({ artist, rank, onClick }: { artist: Artist; rank?: n
 }
 
 export function AlbumCard({ album, onClick }: { album: Album; onClick?: (artist: string, album: string) => void }) {
-  const image = album.image?.find((i) => i.size === "large")?.["#text"] ?? "";
   const name = artistName(album.artist);
   return (
     <div className="card" onClick={() => onClick?.(name, album.name)}>
-      {image ? <img src={image} alt={album.name} /> : <div className="no-img">💿</div>}
+      <SmartImage
+        src={album.image?.find((i) => i.size === "large")?.["#text"] ?? ""}
+        alt={album.name}
+      />
       <div className="card-body">
         <strong>{album.name}</strong>
         <span>{name}</span>
