@@ -28,6 +28,7 @@ export function AlbumCard({ album, onClick }: { album: Album; onClick?: (artist:
       <SmartImage
         src={album.image?.find((i) => i.size === "large")?.["#text"] ?? ""}
         alt={album.name}
+        emoji="💿"
       />
       <div className="card-body">
         <strong>{album.name}</strong>
