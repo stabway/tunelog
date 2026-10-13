@@ -50,6 +50,15 @@ function AppInner() {
 
   const goBack = () => setNavStack((s) => s.slice(0, -1));
 
+  const goHome = () => {
+    setView("home");
+    setNavStack([]);
+    setSearched(false);
+    setQuery("");
+    setError("");
+    window.scrollTo({ top: 0 });
+  };
+
   const handleSearch = async (q: string) => {
     setLoading(true);
     setError("");
@@ -77,7 +86,9 @@ function AppInner() {
   return (
     <div className="app">
       <header>
-        <h1>TuneLog</h1>
+        <h1>
+          <button className="logo-btn" onClick={goHome} title="Back to home">TuneLog</button>
+        </h1>
         <nav>
           <button className={view === "home" ? "tab active" : "tab"} onClick={() => setView("home")}>Каталог</button>
           <button className={view === "playlists" ? "tab active" : "tab"} onClick={() => setView("playlists")}>Плейлісти</button>
