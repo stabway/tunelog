@@ -1,14 +1,13 @@
 import { useEffect, useState } from "react";
 
-const LFM_PLACEHOLDER_IDS = ["2a96cbd8b46e442fc41c2b86b821562f"];
+const STAR_ID = "2a96cbd8b46e442fc41c2b86b821562f";
+const STAR_IMG = `https://lastfm-img.freetls.fastly.net/i/u/174s/${STAR_ID}.png`;
 
 function isLfmPlaceholder(src?: string): boolean {
   if (!src) return true;
-  return LFM_PLACEHOLDER_IDS.some((id) => src.includes(id));
+  return src.includes(STAR_ID);
 }
 
-
-// TheAudioDB free test key is now "123" (the old "2" returns 404).
 async function fetchTadbThumb(artist: string): Promise<string | null> {
   const res = await fetch(
     `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${encodeURIComponent(artist)}`
@@ -64,10 +63,9 @@ interface Props {
   artist?: string;
   alt: string;
   className?: string;
-  emoji?: string;
 }
 
-export default function SmartImage({ src, artist, alt, className, emoji = "🎤" }: Props) {
+export default function SmartImage({ src, artist, alt, className }: Props) {
   const [stage, setStage] = useState<Stage>(
     !isLfmPlaceholder(src) ? "lfm" : artist ? "tadb" : "none"
   );
@@ -94,7 +92,7 @@ export default function SmartImage({ src, artist, alt, className, emoji = "🎤"
   const current = stage === "lfm" ? src : url;
 
   if (!current) {
-    return <div className={className ? `${className} no-img` : "no-img"}>{emoji}</div>;
+    return <img className={className} src={STAR_IMG} alt={alt} loading="lazy" />;
   }
 
   return (
