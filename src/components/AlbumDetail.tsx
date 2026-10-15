@@ -53,7 +53,7 @@ export default function AlbumDetail({ artist, album, onBack, onArtistClick, onAl
         />
         <div>
           <h2>{info.name}</h2>
-          <button className="link" onClick={() => onArtistClick(artistName)}>{artistName}</button>
+          <button className="album-artist" onClick={() => onArtistClick(artistName)}>{artistName}</button>
           {info.tags?.tag && (
             <div className="tags">
               {info.tags.tag.map((t) => <span key={t.name} className="tag">{t.name}</span>)}
