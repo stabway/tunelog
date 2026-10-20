@@ -10,10 +10,11 @@ interface Props {
   onBack: () => void;
   onArtistClick: (name: string) => void;
   onAlbumClick: (artist: string, album: string) => void;
+  onTrackClick: (name: string, artist: string) => void;
   onAddTrack: (track: { name: string; artist: string }) => void;
 }
 
-export default function AlbumDetail({ artist, album, onBack, onArtistClick, onAlbumClick, onAddTrack }: Props) {
+export default function AlbumDetail({ artist, album, onBack, onArtistClick, onAlbumClick, onTrackClick, onAddTrack }: Props) {
   const [info, setInfo] = useState<AlbumInfo | null>(null);
   const [similar, setSimilar] = useState<Album[]>([]);
   const [error, setError] = useState("");
@@ -80,6 +81,7 @@ export default function AlbumDetail({ artist, album, onBack, onArtistClick, onAl
               track={{ ...t, artist: t.artist ?? artistName }}
               rank={i + 1}
               onArtistClick={onArtistClick}
+              onTrackClick={(tr) => onTrackClick(tr.name, tr.artist)}
               onAdd={onAddTrack}
             />
           ))}

@@ -41,16 +41,23 @@ interface TrackRowProps {
   track: Track;
   rank?: number;
   onArtistClick?: (name: string) => void;
+  onTrackClick?: (track: { name: string; artist: string }) => void;
   onAdd?: (track: { name: string; artist: string }) => void;
 }
 
-export function TrackRow({ track, rank, onArtistClick, onAdd }: TrackRowProps) {
+export function TrackRow({ track, rank, onArtistClick, onTrackClick, onAdd }: TrackRowProps) {
   const name = artistName(track.artist);
   return (
     <div className="track-row">
       {rank && <span className="rank">{rank}</span>}
       <div className="track-info">
-        <strong>{track.name}</strong>
+        {onTrackClick ? (
+          <button className="track-name" onClick={() => onTrackClick({ name: track.name, artist: name })}>
+            {track.name}
+          </button>
+        ) : (
+          <strong>{track.name}</strong>
+        )}
         <button className="link" onClick={() => onArtistClick?.(name)}>
           {name}
         </button>

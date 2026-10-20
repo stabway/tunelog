@@ -73,6 +73,17 @@ export async function getArtistTopTracks(name: string, limit = 12) {
   return (d.toptracks?.track ?? []) as import("../types").Track[];
 }
 
+// ---- track detail ----
+export async function getTrackInfo(artist: string, name: string) {
+  const d = await lfm({ method: "track.getinfo", artist, track: name });
+  return d.track as import("../types").TrackInfo;
+}
+
+export async function getSimilarTracks(artist: string, name: string, limit = 12) {
+  const d = await lfm({ method: "track.getsimilar", artist, track: name, limit: String(limit) });
+  return (d.similartracks?.track ?? []) as import("../types").Track[];
+}
+
 // ---- album detail ----
 export async function getAlbumInfo(artist: string, album: string) {
   const d = await lfm({ method: "album.getinfo", artist, album });
@@ -94,9 +105,6 @@ export async function getTopAlbumsByTag(tag: string, limit = 20) {
   return (d.albums?.album ?? []) as import("../types").Album[];
 }
 
-// NOTE: Last.fm has no album.getsimilar endpoint, so "similar albums" are
-// approximated: take the album's top tags, pull each tag's top albums,
-// then merge and rank by tag weight + chart position.
 export async function getSimilarAlbums(artist: string, album: string, limit = 12) {
   const tags = await getAlbumTopTags(artist, album, 3);
   const lists = await Promise.all(

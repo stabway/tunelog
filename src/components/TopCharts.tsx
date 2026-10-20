@@ -13,10 +13,11 @@ function sortByListenersDesc(artists: Artist[]) {
 
 interface Props {
   onArtistClick: (name: string) => void;
+  onTrackClick: (name: string, artist: string) => void;
   onAddTrack: (track: { name: string; artist: string }) => void;
 }
 
-export default function TopCharts({ onArtistClick, onAddTrack }: Props) {
+export default function TopCharts({ onArtistClick, onTrackClick, onAddTrack }: Props) {
   const [mode, setMode] = useState<"global" | "country">("global");
   const [country, setCountry] = useState("Ukraine");
   const [tab, setTab] = useState<"artists" | "tracks">("artists");
@@ -73,7 +74,7 @@ export default function TopCharts({ onArtistClick, onAddTrack }: Props) {
       {!loading && !error && tab === "tracks" && (
         <div className="track-list">
           {tracks.map((t, i) => (
-            <TrackRow key={t.name + i} track={t} rank={i + 1} onArtistClick={onArtistClick} onAdd={onAddTrack} />
+            <TrackRow key={t.name + i} track={t} rank={i + 1} onArtistClick={onArtistClick} onTrackClick={(tr) => onTrackClick(tr.name, tr.artist)} onAdd={onAddTrack} />
           ))}
         </div>
       )}

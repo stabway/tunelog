@@ -47,6 +47,20 @@ export interface Track {
   duration?: string;
 }
 
+export interface TrackInfo {
+  name: string;
+  artist?: string | { name: string };
+  album?: string | { title?: string };
+  mbid?: string;
+  url?: string;
+  image?: LfmImage[];
+  duration?: string;
+  listeners?: string;
+  playcount?: string;
+  wiki?: { summary?: string; content?: string };
+  toptags?: { tag?: { name: string }[] };
+}
+
 export interface ArtistInfo {
   name: string;
   bio?: { summary?: string; content?: string };

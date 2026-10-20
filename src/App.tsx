@@ -3,6 +3,7 @@ import SearchBar from "./components/SearchBar";
 import TopCharts from "./components/TopCharts";
 import ArtistDetail from "./components/ArtistDetail";
 import AlbumDetail from "./components/AlbumDetail";
+import TrackDetail from "./components/TrackDetail";
 import PlaylistPanel from "./components/PlaylistPanel";
 import { AlbumCard, ArtistCard, TrackRow } from "./components/Cards";
 import { searchAlbums, searchArtists, searchTracks } from "./api/lastfm";
@@ -11,7 +12,8 @@ import type { Album, Artist, PlaylistTrack, SearchTab, Track } from "./types";
 
 type NavEntry =
   | { kind: "artist"; name: string }
-  | { kind: "album"; artist: string; album: string };
+  | { kind: "album"; artist: string; album: string }
+  | { kind: "track"; name: string; artist: string };
 
 function AppInner() {
   const [view, setView] = useState<"home" | "playlists">("home");
@@ -44,6 +46,17 @@ function AppInner() {
       return t?.kind === "album" && t.artist === artist && t.album === album
         ? s
         : [...s, { kind: "album", artist, album }];
+    });
+    window.scrollTo({ top: 0 });
+  };
+
+  const openTrack = (name: string, artist: string) => {
+    if (!name || !artist) return;
+    setNavStack((s) => {
+      const t = s[s.length - 1];
+      return t?.kind === "track" && t.name === name && t.artist === artist
+        ? s
+        : [...s, { kind: "track", name, artist }];
     });
     window.scrollTo({ top: 0 });
   };
@@ -104,13 +117,23 @@ function AppInner() {
           {error && <p className="error">{error}</p>}
           {loading && <p className="muted">Шукаю... {tab}…</p>}
 
-          {top?.kind === "album" ? (
+          {top?.kind === "track" ? (
+            <TrackDetail
+              name={top.name}
+              artist={top.artist}
+              onBack={goBack}
+              onArtistClick={openArtist}
+              onTrackClick={openTrack}
+              onAddTrack={setPendingTrack}
+            />
+          ) : top?.kind === "album" ? (
             <AlbumDetail
               artist={top.artist}
               album={top.album}
               onBack={goBack}
               onArtistClick={openArtist}
               onAlbumClick={openAlbum}
+              onTrackClick={openTrack}
               onAddTrack={setPendingTrack}
             />
           ) : top?.kind === "artist" ? (
@@ -119,6 +142,7 @@ function AppInner() {
               onBack={goBack}
               onArtistClick={openArtist}
               onAlbumClick={openAlbum}
+              onTrackClick={openTrack}
               onAddTrack={setPendingTrack}
             />
           ) : (
@@ -147,6 +171,7 @@ function AppInner() {
                           key={t.name + (typeof t.artist === "string" ? t.artist : t.artist?.name)}
                           track={t}
                           onArtistClick={openArtist}
+                          onTrackClick={openTrack}
                           onAdd={setPendingTrack}
                         />
                       ))}
@@ -160,7 +185,7 @@ function AppInner() {
                 </section>
               )}
 
-              {!searched && <TopCharts onArtistClick={openArtist} onAddTrack={setPendingTrack} />}
+              {!searched && <TopCharts onArtistClick={openArtist} onTrackClick={openTrack} onAddTrack={setPendingTrack} />}
             </>
           )}
         </>
