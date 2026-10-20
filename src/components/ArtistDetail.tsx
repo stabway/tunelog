@@ -56,7 +56,7 @@ export default function ArtistDetail({ name, onBack, onArtistClick, onAlbumClick
           alt={info.name}
         />
         <div>
-          <h2>{info.name}</h2>
+          <h2 className="artist-title">{info.name}</h2>
           {info.tags?.tag && (
             <div className="tags">
               {info.tags.tag.map((t) => <span key={t.name} className="tag">{t.name}</span>)}
