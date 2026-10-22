@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { getSimilarTracks, getTrackInfo } from "../api/lastfm";
+import { getAlbumInfo, getSimilarTracks, getTrackInfo } from "../api/lastfm";
 import { getLyrics } from "../api/lyrics";
 import type { Track, TrackInfo } from "../types";
 import { TrackRow } from "./Cards";
@@ -22,6 +22,7 @@ function formatDuration(ms: number) {
 
 export default function TrackDetail({ name, artist, onBack, onArtistClick, onTrackClick, onAddTrack }: Props) {
   const [info, setInfo] = useState<TrackInfo | null>(null);
+  const [cover, setCover] = useState("");
   const [similar, setSimilar] = useState<Track[]>([]);
   const [lyrics, setLyrics] = useState<string | null>(null);
   const [lyricsDone, setLyricsDone] = useState(false);
@@ -30,23 +31,40 @@ export default function TrackDetail({ name, artist, onBack, onArtistClick, onTra
   useEffect(() => {
     let cancelled = false;
     setInfo(null);
+    setCover("");
     setSimilar([]);
     setLyrics(null);
     setLyricsDone(false);
     setError("");
-    Promise.all([
-      getTrackInfo(artist, name),
-      getSimilarTracks(artist, name),
-      getLyrics(artist, name).catch(() => null),
-    ])
-      .then(([i, s, l]) => {
+    (async () => {
+      try {
+        const [i, s, l] = await Promise.all([
+          getTrackInfo(artist, name),
+          getSimilarTracks(artist, name),
+          getLyrics(artist, name).catch(() => null),
+        ]);
         if (cancelled) return;
         setInfo(i);
         setSimilar(s);
         setLyrics(l);
         setLyricsDone(true);
-      })
-      .catch((e) => !cancelled && setError(e.message));
+        // pull the SONG cover: the art of the album this track is from
+        const albumTitle = typeof i.album === "string" ? i.album : i.album?.title;
+        const albumArtist =
+          typeof i.album === "object" && i.album?.artist
+            ? i.album.artist
+            : typeof i.artist === "string"
+              ? i.artist
+              : (i.artist?.name ?? artist);
+        if (albumTitle) {
+          const ai = await getAlbumInfo(albumArtist, albumTitle).catch(() => null);
+          if (cancelled || !ai) return;
+          setCover(ai.image?.find((im) => im.size === "large")?.["#text"] ?? "");
+        }
+      } catch (e) {
+        if (!cancelled) setError((e as Error).message);
+      }
+    })();
     return () => { cancelled = true; };
   }, [artist, name]);
 
@@ -62,14 +80,9 @@ export default function TrackDetail({ name, artist, onBack, onArtistClick, onTra
     <section>
       <button className="link" onClick={onBack}>← Back</button>
       <div className="artist-head">
-        <SmartImage
-          className="artist-img"
-          src={info.image?.find((i) => i.size === "large")?.["#text"]}
-          artist={artistName}
-          alt={name}
-        />
+        <SmartImage className="artist-img" src={cover} alt={name} />
         <div>
-          <h2 className="artist-title">{info.name}</h2>
+          <h2>{info.name}</h2>
           <button className="album-artist" onClick={() => onArtistClick(artistName)}>{artistName}</button>
           {info.toptags?.tag && (
             <div className="tags">

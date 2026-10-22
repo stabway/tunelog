@@ -50,7 +50,7 @@ export interface Track {
 export interface TrackInfo {
   name: string;
   artist?: string | { name: string };
-  album?: string | { title?: string };
+  album?: string | { title?: string; artist?: string; mbid?: string; url?: string };
   mbid?: string;
   url?: string;
   image?: LfmImage[];
