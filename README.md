@@ -1,75 +1,37 @@
-# React + TypeScript + Vite
+# TuneLog
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A Last.fm-based music catalog. Search artists, albums and tracks, browse top charts globally or by country, dig into artist biographies and album tracklists, read lyrics, and build your own playlists.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+- **Search** — artists, albums, and tracks via the Last.fm API
+- **Top charts** — global or filtered by country (Ukraine, US, UK, Germany, Poland, France, Japan, Brazil)
+- **Artist pages** — biography, stats, tags, top tracks, top albums, similar artists
+- **Album pages** — cover, tracklist, description, and similar albums
+- **Track pages** — lyrics (via [LRCLIB](https://lrclib.net)), track description when available, and similar tracks
+- **Playlists** — create playlists and add songs to them from anywhere in the app
+- **Smart images** — album/track art comes from Last.fm; artist photos fall back to TheAudioDB → Deezer → Wikipedia
 
-## React Compiler
+## Tech stack
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+React 19 · TypeScript · Vite · Last.fm API · LRCLIB
 
-## Expanding the ESLint configuration
+## Running locally
 
-If you are developing a production application, we recommend updating the configuration to enable type-aware lint rules:
+Prerequisites: **Node.js 20+** & npm
 
-```js
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-
-      // Remove tseslint.configs.recommended and replace with this
-      tseslint.configs.recommendedTypeChecked,
-      // Alternatively, use this for stricter rules
-      tseslint.configs.strictTypeChecked,
-      // Optionally, add this for stylistic rules
-      tseslint.configs.stylisticTypeChecked,
-
-      // Other configs...
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
+```bash
+git clone https://github.com/stabway/tunelog.git
+cd tunelog
+npm install
+npm run dev
 ```
 
-You can also install [eslint-plugin-react-x](https://npmx.dev/package/eslint-plugin-react-x) and [eslint-plugin-react-dom](https://npmx.dev/package/eslint-plugin-react-dom) for React-specific lint rules:
+### Other scripts
 
-```js
-// eslint.config.js
-import reactX from 'eslint-plugin-react-x'
-import reactDom from 'eslint-plugin-react-dom'
-
-export default defineConfig([
-  globalIgnores(['dist']),
-  {
-    files: ['**/*.{ts,tsx}'],
-    extends: [
-      // Other configs...
-      // Enable lint rules for React
-      reactX.configs['recommended-typescript'],
-      // Enable lint rules for React DOM
-      reactDom.configs.recommended,
-    ],
-    languageOptions: {
-      parserOptions: {
-        project: ['./tsconfig.node.json', './tsconfig.app.json'],
-        tsconfigRootDir: import.meta.dirname,
-      },
-      // other options...
-    },
-  },
-])
-
-```
+| Command           | What it does                          |
+| ----------------- | ------------------------------------- |
+| `npm run dev`     | Start the dev server with HMR         |
+| `npm run build`   | Type-check and build for production   |
+| `npm run preview` | Preview the production build locally  |
+| `npm run lint`    | Run ESLint                            |
