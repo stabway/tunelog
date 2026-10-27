@@ -11,6 +11,7 @@ A Last.fm-based music catalog. Search artists, albums and tracks, browse top cha
 - **Track pages** — lyrics (via [LRCLIB](https://lrclib.net)), track description when available, and similar tracks
 - **Playlists** — create playlists and add songs to them from anywhere in the app
 - **Smart images** — album/track art comes from Last.fm; artist photos fall back to TheAudioDB → Deezer → Wikipedia
+- **Song Preview** — listen to a 30 second part of the song (for free =P)
 
 ## Tech stack
 
