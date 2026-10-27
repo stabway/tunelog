@@ -1,6 +1,6 @@
 # TuneLog
 
-A Last.fm-based music catalog. Search artists, albums and tracks, browse top charts globally or by country, dig into artist biographies and album tracklists, read lyrics, and build your own playlists.
+A Last.fm-based music catalog. Search artists, albums and tracks, browse top charts globally or by country, dig into artist biographies and album tracklists, read lyrics, and build your own playlists
 
 ## Features
 
