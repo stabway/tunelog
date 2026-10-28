@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { getAlbumInfo, getSimilarTracks, getTrackInfo } from "../api/lastfm";
 import { getLyrics } from "../api/lyrics";
+import { getPreview, type Preview } from "../api/preview";
 import type { Track, TrackInfo } from "../types";
 import { TrackRow } from "./Cards";
+import PreviewPlayer from "./PreviewPlayer";
 import SmartImage from "./SmartImage";
 
 interface Props {
@@ -26,7 +28,17 @@ export default function TrackDetail({ name, artist, onBack, onArtistClick, onTra
   const [similar, setSimilar] = useState<Track[]>([]);
   const [lyrics, setLyrics] = useState<string | null>(null);
   const [lyricsDone, setLyricsDone] = useState(false);
+  const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState("");
+
+  useEffect(() => {
+    let cancelled = false;
+    setPreview(null);
+    getPreview(artist, name).then((p) => {
+      if (!cancelled) setPreview(p);
+    });
+    return () => { cancelled = true; };
+  }, [artist, name]);
 
   useEffect(() => {
     let cancelled = false;
@@ -48,7 +60,6 @@ export default function TrackDetail({ name, artist, onBack, onArtistClick, onTra
         setSimilar(s);
         setLyrics(l);
         setLyricsDone(true);
-        // pull the SONG cover: the art of the album this track is from
         const albumTitle = typeof i.album === "string" ? i.album : i.album?.title;
         const albumArtist =
           typeof i.album === "object" && i.album?.artist
@@ -100,6 +111,8 @@ export default function TrackDetail({ name, artist, onBack, onArtistClick, onTra
           )}
         </div>
       </div>
+
+      {preview && <PreviewPlayer key={preview.previewUrl} preview={preview} />}
 
       <h3>Lyrics</h3>
       {lyrics ? (
