@@ -1,3 +1,8 @@
+/* eslint-disable react-refresh/only-export-components --
+   This file intentionally exports the PlaylistProvider component together with the
+   usePlaylists hook (idiomatic React Context pattern). Fast Refresh degradation here
+   is acceptable — and temporary: this whole context is replaced by a Zustand store
+   with persist in Phase 2, after which the disable goes away with the file. */
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import type { Playlist, PlaylistTrack } from "../types";
 

@@ -19,11 +19,17 @@ export default function AlbumDetail({ artist, album, onBack, onArtistClick, onAl
   const [similar, setSimilar] = useState<Album[]>([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
+  // reset stale state when artist/album change (adjust-during-render pattern)
+  const [prevKey, setPrevKey] = useState(`${artist}|||${album}`);
+  if (prevKey !== `${artist}|||${album}`) {
+    setPrevKey(`${artist}|||${album}`);
     setInfo(null);
     setSimilar([]);
     setError("");
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     Promise.all([getAlbumInfo(artist, album), getSimilarAlbums(artist, album)])
       .then(([i, s]) => {
         if (cancelled) return;

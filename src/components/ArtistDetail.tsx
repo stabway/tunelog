@@ -20,10 +20,15 @@ export default function ArtistDetail({ name, onBack, onArtistClick, onAlbumClick
   const [similar, setSimilar] = useState<Artist[]>([]);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    let cancelled = false;
+  const [prevName, setPrevName] = useState(name);
+  if (prevName !== name) {
+    setPrevName(name);
     setInfo(null);
     setError("");
+  }
+
+  useEffect(() => {
+    let cancelled = false;
     Promise.all([
       getArtistInfo(name),
       getArtistTopAlbums(name),

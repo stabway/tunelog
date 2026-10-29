@@ -23,13 +23,21 @@ export default function TopCharts({ onArtistClick, onTrackClick, onAddTrack }: P
   const [tab, setTab] = useState<"artists" | "tracks">("artists");
   const [artists, setArtists] = useState<Artist[]>([]);
   const [tracks, setTracks] = useState<Track[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+
+  // flag loading when the query params change (adjust-during-render pattern —
+  // avoids calling setState synchronously inside the effect below)
+  const paramsKey = `${mode}|${country}|${tab}`;
+  const [prevKey, setPrevKey] = useState(paramsKey);
+  if (prevKey !== paramsKey) {
+    setPrevKey(paramsKey);
+    setLoading(true);
+    setError("");
+  }
 
   useEffect(() => {
     let cancelled = false;
-    setLoading(true);
-    setError("");
     const load = tab === "artists"
       ? mode === "global" ? getTopArtists(20) : getTopArtistsByCountry(country, 20)
       : mode === "global" ? getTopTracks(20) : getTopTracksByCountry(country, 20);

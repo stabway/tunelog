@@ -31,9 +31,22 @@ export default function TrackDetail({ name, artist, onBack, onArtistClick, onTra
   const [preview, setPreview] = useState<Preview | null>(null);
   const [error, setError] = useState("");
 
+  // reset stale state when the track changes (adjust-during-render pattern)
+  const trackKey = `${artist}|||${name}`;
+  const [prevKey, setPrevKey] = useState(trackKey);
+  if (prevKey !== trackKey) {
+    setPrevKey(trackKey);
+    setInfo(null);
+    setCover("");
+    setSimilar([]);
+    setLyrics(null);
+    setLyricsDone(false);
+    setPreview(null);
+    setError("");
+  }
+
   useEffect(() => {
     let cancelled = false;
-    setPreview(null);
     getPreview(artist, name).then((p) => {
       if (!cancelled) setPreview(p);
     });
@@ -42,12 +55,6 @@ export default function TrackDetail({ name, artist, onBack, onArtistClick, onTra
 
   useEffect(() => {
     let cancelled = false;
-    setInfo(null);
-    setCover("");
-    setSimilar([]);
-    setLyrics(null);
-    setLyricsDone(false);
-    setError("");
     (async () => {
       try {
         const [i, s, l] = await Promise.all([

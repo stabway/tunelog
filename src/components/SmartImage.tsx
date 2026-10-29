@@ -10,16 +10,23 @@ interface Props {
   className?: string;
 }
 
+function startStage(src?: string, artist?: string): Stage {
+  return !isLfmPlaceholder(src) ? "lfm" : artist ? "fallback" : "none";
+}
+
 export default function SmartImage({ src, artist, alt, className }: Props) {
   const [url, setUrl] = useState("");
-  const [stage, setStage] = useState<Stage>(
-    !isLfmPlaceholder(src) ? "lfm" : artist ? "fallback" : "none"
-  );
+  const [stage, setStage] = useState<Stage>(startStage(src, artist));
 
-  useEffect(() => {
+  // reset the fallback chain when src/artist change (adjust-during-render pattern —
+  // avoids calling setState synchronously inside the effect below)
+  const propKey = `${src ?? ""}|${artist ?? ""}`;
+  const [prevKey, setPrevKey] = useState(propKey);
+  if (prevKey !== propKey) {
+    setPrevKey(propKey);
     setUrl("");
-    setStage(!isLfmPlaceholder(src) ? "lfm" : artist ? "fallback" : "none");
-  }, [src, artist]);
+    setStage(startStage(src, artist));
+  }
 
   useEffect(() => {
     if (stage !== "fallback" || !artist) return;
