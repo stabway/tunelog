@@ -151,7 +151,6 @@ section { margin-top: 1.5rem; }
 .preview-time { color: var(--muted); font-size: 0.8rem; font-variant-numeric: tabular-nums; min-width: 2.4rem; }
 .preview-time:last-of-type { text-align: right; }
 
-/* the global `input` style adds a box/border, so reset it for the slider */
 .preview-seek {
   --pct: 0%;
   -webkit-appearance: none; appearance: none;
@@ -178,4 +177,15 @@ section { margin-top: 1.5rem; }
 @media (max-width: 560px) {
   .preview-meta { flex: 1 1 40%; }
   .preview-link { margin-left: auto; }
+}
+
+.logo-btn {
+  all: unset;
+  cursor: pointer;
+}
+
+.logo-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+  border-radius: 4px;
 }

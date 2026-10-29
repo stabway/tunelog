@@ -1,62 +1,7 @@
 import { useEffect, useState } from "react";
+import { fetchArtistImage, isLfmPlaceholder, LFM_STAR_IMG } from "../api/images";
 
-const STAR_ID = "2a96cbd8b46e442fc41c2b86b821562f";
-const STAR_IMG = `https://lastfm-img.freetls.fastly.net/i/u/174s/${STAR_ID}.png`;
-
-function isLfmPlaceholder(src?: string): boolean {
-  if (!src) return true;
-  return src.includes(STAR_ID);
-}
-
-async function fetchTadbThumb(artist: string): Promise<string | null> {
-  const res = await fetch(
-    `https://www.theaudiodb.com/api/v1/json/123/search.php?s=${encodeURIComponent(artist)}`
-  );
-  const data = await res.json();
-  return data?.artists?.[0]?.strArtistThumb ?? null;
-}
-
-async function fetchDeezerPicture(artist: string): Promise<string | null> {
-  const res = await fetch(
-    `https://api.deezer.com/search/artist?q=${encodeURIComponent(artist)}&limit=1`
-  );
-  const data = await res.json();
-  return data?.data?.[0]?.picture_big ?? data?.data?.[0]?.picture ?? null;
-}
-
-async function fetchWikiImage(artist: string): Promise<string | null> {
-  const res = await fetch(
-    `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(artist)}`
-  );
-  if (!res.ok) return null;
-  const data = await res.json();
-  return data?.originalimage?.source ?? data?.thumbnail?.source ?? null;
-}
-
-type Stage = "lfm" | "tadb" | "deezer" | "wiki" | "none";
-
-const FALLBACKS: Partial<Record<Stage, (a: string) => Promise<string | null>>> = {
-  tadb: fetchTadbThumb,
-  deezer: fetchDeezerPicture,
-  wiki: fetchWikiImage,
-};
-
-function nextStage(s: Stage): Stage {
-  if (s === "lfm") return "tadb";
-  if (s === "tadb") return "deezer";
-  if (s === "deezer") return "wiki";
-  return "none";
-}
-
-const fallbackCache = new Map<string, Promise<string | null>>();
-
-function fetchFallback(stage: Stage, artist: string): Promise<string | null> {
-  const key = `${stage}:${artist.toLowerCase()}`;
-  if (!fallbackCache.has(key)) {
-    fallbackCache.set(key, FALLBACKS[stage]!(artist).catch(() => null));
-  }
-  return fallbackCache.get(key)!;
-}
+type Stage = "lfm" | "fallback" | "none";
 
 interface Props {
   src?: string;
@@ -66,23 +11,23 @@ interface Props {
 }
 
 export default function SmartImage({ src, artist, alt, className }: Props) {
-  const [stage, setStage] = useState<Stage>(
-    !isLfmPlaceholder(src) ? "lfm" : artist ? "tadb" : "none"
-  );
   const [url, setUrl] = useState("");
+  const [stage, setStage] = useState<Stage>(
+    !isLfmPlaceholder(src) ? "lfm" : artist ? "fallback" : "none"
+  );
 
   useEffect(() => {
     setUrl("");
-    setStage(!isLfmPlaceholder(src) ? "lfm" : artist ? "tadb" : "none");
+    setStage(!isLfmPlaceholder(src) ? "lfm" : artist ? "fallback" : "none");
   }, [src, artist]);
 
   useEffect(() => {
-    if (stage === "lfm" || stage === "none" || !artist) return;
+    if (stage !== "fallback" || !artist) return;
     let cancelled = false;
-    fetchFallback(stage, artist).then((u) => {
+    fetchArtistImage(artist).then((u) => {
       if (cancelled) return;
       if (u) setUrl(u);
-      else setStage((s) => nextStage(s));
+      else setStage("none");
     });
     return () => {
       cancelled = true;
@@ -92,7 +37,7 @@ export default function SmartImage({ src, artist, alt, className }: Props) {
   const current = stage === "lfm" ? src : url;
 
   if (!current) {
-    return <img className={className} src={STAR_IMG} alt={alt} loading="lazy" />;
+    return <img className={className} src={LFM_STAR_IMG} alt={alt} loading="lazy" />;
   }
 
   return (
@@ -101,9 +46,7 @@ export default function SmartImage({ src, artist, alt, className }: Props) {
       src={current}
       alt={alt}
       loading="lazy"
-      onError={() =>
-        setStage((s) => nextStage(s))
-      }
+      onError={() => setStage((s) => (s === "lfm" ? "fallback" : "none"))}
     />
   );
 }

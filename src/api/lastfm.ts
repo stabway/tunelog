@@ -1,7 +1,14 @@
-const API_KEY = "35c9ea17cc47a3668034997808f5a840";
+// Reads the key from .env (VITE_LASTFM_API_KEY) instead of a hardcoded value.
+
+const API_KEY: string = import.meta.env.VITE_LASTFM_API_KEY ?? "";
 const BASE = "https://ws.audioscrobbler.com/2.0/";
 
 async function lfm(params: Record<string, string>) {
+  if (!API_KEY) {
+    throw new Error(
+      "VITE_LASTFM_API_KEY is missing. Copy .env.example to .env and paste your Last.fm API key (https://www.last.fm/api/account/create)."
+    );
+  }
   const qs = new URLSearchParams({
     api_key: API_KEY,
     format: "json",

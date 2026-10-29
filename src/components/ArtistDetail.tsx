@@ -76,7 +76,7 @@ export default function ArtistDetail({ name, onBack, onArtistClick, onAlbumClick
       <h3>Top tracks</h3>
       <div className="track-list">
         {tracks.map((t) => (
-          <TrackRow key={t.name} track={t} onArtistClick={() => {}} onTrackClick={(tr) => onTrackClick(tr.name, tr.artist)} onAdd={onAddTrack} />
+          <TrackRow key={t.name} track={t} onTrackClick={(tr) => onTrackClick(tr.name, tr.artist)} onAdd={onAddTrack} />
         ))}
       </div>
 

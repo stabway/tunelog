@@ -171,7 +171,7 @@ function AppInner() {
                           key={t.name + (typeof t.artist === "string" ? t.artist : t.artist?.name)}
                           track={t}
                           onArtistClick={openArtist}
-                          onTrackClick={openTrack}
+                          onTrackClick={(tr) => openTrack(tr.name, tr.artist)}
                           onAdd={setPendingTrack}
                         />
                       ))}

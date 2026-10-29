@@ -1,5 +1,5 @@
-// Lyrics via LRCLIB (https://lrclib.net) — free, no API key, CORS-enabled.
-// Last.fm removed lyrics from their API years ago, so this fills the gap.
+// Lyrics via LRCLIB (https://lrclib.net) — free, no API key, CORS-enabled
+// Last.fm removed lyrics from their API years ago, so this fills the gap
 
 interface LrcLibResult {
   plainLyrics?: string;
